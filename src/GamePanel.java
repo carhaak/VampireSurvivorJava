@@ -1,14 +1,13 @@
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.Array;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 
 public class GamePanel extends JPanel implements KeyListener {
 
@@ -62,8 +61,6 @@ public class GamePanel extends JPanel implements KeyListener {
     protected void paintComponent(Graphics g){
         super.paintComponent(g);
 
-
-
         for (Entity e : entities){
             g.setColor(e.getColor());
             g.fillRect(e.getX(),e.getY(),e.getWidth(),e.getHeight());
@@ -74,9 +71,7 @@ public class GamePanel extends JPanel implements KeyListener {
         double s = 5;
         double d = s / Math.sqrt(2);
 
-        if(pressedKeys.contains(KeyEvent.VK_K)){
-            player.attacks();
-        }
+
 
         if(pressedKeys.size()<=1){
             if (pressedKeys.contains(KeyEvent.VK_W)) player.move(0,-s);
@@ -93,8 +88,12 @@ public class GamePanel extends JPanel implements KeyListener {
 
     }
     public void updateEnemies(){
-        for(Entity e : entities){
-            if(e.isEnemy()){
+        Iterator<Entity> it = entities.iterator();
+
+        while(it.hasNext()){
+            Entity e = it.next();
+
+            if (e.isEnemy()){
                 if(Math.abs(e.getX() - player.getX()) >= Math.abs(e.getY() - player.getY())){
                     if (e.getX() > player.getX()){
                         e.move(-5,0);
@@ -111,17 +110,29 @@ public class GamePanel extends JPanel implements KeyListener {
                     }
                 }
 
-
-
-
+                if(((Math.abs(e.getX() - player.getX()) <= player.getAttackRadius()) &&
+                        (Math.abs(e.getY() - player.getY())) <= player.getAttackRadius()) &&
+                        player.isAttacking()){
+                    e.takeDamage(player.getAttackDamage());
+                }
+                if(e.getHealthPoints() <= 0){
+                    entities.remove(e);
+                }
             }
+
+
+
         }
+
+
     }
-
-
 
     public void keyPressed(KeyEvent k){
         pressedKeys.add(k.getKeyCode());
+
+        if(k.getKeyCode() == KeyEvent.VK_K) {
+            player.attacks();
+        }
 
     }
 
